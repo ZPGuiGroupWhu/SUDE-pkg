@@ -1,7 +1,7 @@
 [project]
 name = "sude"
 version = "0.1.0"
-description = "A scalable manifold learning (SUDE) method that can cope with large-scale and high-dimensional data in an efficient manner"
+description = "A scalable manifold learning (SUDE) method that can cope with large-scale and high-dimensional data in an efficient manner."
 readme = "README.md"
 authors = [
     {name = "pdh", email = "pengdh@whu.edu.cn"}
@@ -21,7 +21,7 @@ classifiers = [
 ]
 keywords = ["manifold learning", "dimension reduction", "embedding","landmark sampling"]
 dependencies = [
-    "scikit-learn>=1.0.2",
+    "scikit-learn>=1.3.2",
 ]
 
 [project.urls]
