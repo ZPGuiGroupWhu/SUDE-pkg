@@ -3,6 +3,23 @@ We propose a scalable manifold learning (SUDE) method that can cope with large-s
 
 ![image](https://github.com/ZPGuiGroupWhu/sude/blob/master/github.png)
 
+# Installation
+Supported `python` versions are `3.8` and above.
+
+This project has been uploaded to [PyPI](https://pypi.org/project/cdc-cluster/), supporting direct download and installation from pypi
+
+```
+pip install cdc-cluster
+```
+
+## Manual Installation
+
+```
+git clone https://github.com/ZPGuiGroupWhu/CDC-pkg.git
+cd CDC-pkg
+pip install -e .
+```
+
 # How To Run
 Python code of SUDE is in the ```sude_py``` file, where the ```sude``` function provides multiple hyperparameters for user configuration as follows
 ```python
@@ -98,5 +115,6 @@ BiocManager::install(c("BiocGenerics", "BiocSingular", "GenomeInfoDb", "GenomicR
 
 # Citation Request
 Peng, D., Gui, Z., Wei, W. et al. Sampling-enabled scalable manifold learning unveils the discriminative cluster structure of high-dimensional data. Nat. Mach. Intell. (2025). https://doi.org/10.1038/s42256-025-01112-9
+
 
 
