@@ -1,5 +1,5 @@
 # Sampling-enabled scalable manifold learning unveils the discriminative cluster structure of high-dimensional data
-We propose a scalable manifold learning (SUDE) method that can cope with large-scale and high-dimensional data in an efficient manner. It starts by seeking a set of landmarks to construct the low-dimensional skeleton of the entire data, and then incorporates the non-landmarks into this skeleton based on the constrained locally linear embedding. This toolkit includes the main code of SUDE, and also two applications for preprocess scRNA-seq and ECG data. This paper has been published in ***Nature Machine Intelligence***, and more details can be seen https://www.nature.com/articles/s42256-025-01112-9.
+We propose a scalable manifold learning (SUDE) method that can cope with large-scale and high-dimensional data in an efficient manner. It starts by seeking a set of landmarks to construct the low-dimensional skeleton of the entire data, and then incorporates the non-landmarks into this skeleton based on the constrained locally linear embedding. This project provides the ***Python version of SUDE***. The corresponding paper has been published in ***Nature Machine Intelligence***, and more details can be seen https://www.nature.com/articles/s42256-025-01112-9.
 
 ![image](https://github.com/ZPGuiGroupWhu/sude/blob/master/github.png)
 
@@ -98,4 +98,5 @@ BiocManager::install(c("BiocGenerics", "BiocSingular", "GenomeInfoDb", "GenomicR
 
 # Citation Request
 Peng, D., Gui, Z., Wei, W. et al. Sampling-enabled scalable manifold learning unveils the discriminative cluster structure of high-dimensional data. Nat. Mach. Intell. (2025). https://doi.org/10.1038/s42256-025-01112-9
+
 
