@@ -1,0 +1,41 @@
+[project]
+name = "sude"
+version = "0.1.0"
+description = "xxx"
+readme = "README.md"
+authors = [
+    {name = "pdh", email = "pengdh@whu.edu.cn"}
+]
+license = {text = "MIT"}
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+keywords = ["machine learning", "dimensionality reduction", "manifold learning"]
+dependencies = [
+    "scikit-learn>=1.0.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/ZPGuiGroupWhu/SUDE-pkg"
+Repository = "https://github.com/ZPGuiGroupWhu/SUDE-pkg.git"
+Issues = "https://github.com/ZPGuiGroupWhu/SUDE-pkg/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["sude"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
