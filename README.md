@@ -1,67 +1,9 @@
-# Sampling-enabled scalable manifold learning unveils discriminative cluster structure of high-dimensional data
+# Sampling-enabled scalable manifold learning unveils the discriminative cluster structure of high-dimensional data
 We propose a scalable manifold learning (SUDE) method that can cope with large-scale and high-dimensional data in an efficient manner. It starts by seeking a set of landmarks to construct the low-dimensional skeleton of the entire data, and then incorporates the non-landmarks into this skeleton based on the constrained locally linear embedding. This toolkit includes the main code of SUDE, and also two applications for preprocess scRNA-seq and ECG data. This paper has been published in ***Nature Machine Intelligence***, and more details can be seen https://www.nature.com/articles/s42256-025-01112-9.
 
-![image](https://github.com/ZPGuiGroupWhu/scml/blob/main/github.png)
+![image](https://github.com/ZPGuiGroupWhu/sude/blob/master/github.png)
 
 # How To Run
-> **MATLAB**
-
-MATLAB code of SUDE is in the ```sude_mat``` file, where the ```sude``` function provides multiple hyperparameters for user configuration as follows 
-```matlab
-function [Y, id_samp, para] = sude(X, varargin)
-%   This function returns representation of the N by D matrix X in the lower-dimensional space and 
-%   the ID of landmarks sampled by PPS. Each row in X represents an observation.
-% 
-%   Parameters are: 
-% 
-%   'NumDimensions'- A positive integer specifying the number of dimension of the representation Y. 
-%                    Default: 2
-%   'NumNeighbors' - A non-negative integer specifying the number of nearest neighbors for PPS to 
-%                    sample landmarks. It must be smaller than N.
-%                    Default: adaptive
-%   'Normalize'    - Logical scalar. If true, normalize X using min-max normalization. If features in 
-%                    X are on different scales, 'Normalize' should be set to true because the learning 
-%                    process is based on nearest neighbors and features with large scales can override 
-%                    the contribution of features with small scales. 
-%                    Default: True
-%   'LargeData'    - Logical scalar. If true, the data can be split into multiple blocks to avoid the problem 
-%                    of memory overflow, and the gradient can be computed block by block using 'learning_l' function.                    
-%                    Default: False
-%   'InitMethod'   - A string specifying the method for initializing Y before manifold learning. 
-%       'le'       - Laplacian eigenmaps.
-%       'pca'      - Principal component analysis.
-%       'mds'      - Multidimensional scaling.
-%                    Default: 'le' 
-%   'AggCoef'      - A positive scalar specifying the aggregation coefficient. 
-%                    Default: 1.2
-%   'MaxEpoch'     - Maximum number of epochs to take. 
-%                    Default: 50 
-```
-
-The ```main.m``` file provides an example
-```matlab
-% Input data
-clear;
-data = csvread('benchmarks/rice.csv');
-% data = textread('G:\MATLAB Drive\MATLAB\MNIST\iris.txt');
-
-% Obtain data size and true annotations
-[~, m] = size(data);
-ref = data(:, m);
-X = data(:, 1:m-1);
-clear data
-
-% Perform SUDE embedding
-t1 = clock;
-[Y, idx, para] = sude(X,'NumNeighbors',10);
-t2 = clock;
-disp(['Elapsed time:', num2str(etime(t2,t1)),'s']);
-plotcluster2(Y, ref);
-```
-
-
-> **Python**
-
 Python code of SUDE is in the ```sude_py``` file, where the ```sude``` function provides multiple hyperparameters for user configuration as follows
 ```python
 def sude(
@@ -156,3 +98,4 @@ BiocManager::install(c("BiocGenerics", "BiocSingular", "GenomeInfoDb", "GenomicR
 
 # Citation Request
 Peng, D., Gui, Z., Wei, W. et al. Sampling-enabled scalable manifold learning unveils the discriminative cluster structure of high-dimensional data. Nat. Mach. Intell. (2025). https://doi.org/10.1038/s42256-025-01112-9
+
