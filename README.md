@@ -66,7 +66,7 @@ def sude(
 """
 ```
 
-The ```main.py``` file provides an example
+After installing the SUDE library, you can use this function as follows:
 ```python
 import pandas as pd
 import numpy as np
@@ -94,6 +94,7 @@ plt.show()
 
 # Citation Request
 Peng, D., Gui, Z., Wei, W. et al. Sampling-enabled scalable manifold learning unveils the discriminative cluster structure of high-dimensional data. Nat. Mach. Intell. (2025). https://doi.org/10.1038/s42256-025-01112-9
+
 
 
 
