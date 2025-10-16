@@ -52,7 +52,7 @@ def sude(
 
     """
     assert isinstance(no_dims, int) and no_dims > 0 and no_dims < X.shape[1]
-    assert isinstance(k1, int) and k1 > 0 and no_dims < X.shape[0]
+    assert isinstance(k1, int) and k1 >= 0 and no_dims < X.shape[0]
     assert normalize in [True, False]
     assert large in [True, False]
     assert initialize in ['le', 'pca', 'mds']
