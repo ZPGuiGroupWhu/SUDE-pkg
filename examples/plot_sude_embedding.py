@@ -4,7 +4,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 
-from sude import sude
+from sude import SUDE
 
 
 data_path = Path(__file__).resolve().parents[1] / "benchmarks" / "rice.csv"
@@ -15,7 +15,12 @@ X = data[:, : m - 1]
 labels = data[:, m - 1]
 
 start_time = time.time()
-embedding = sude(X, k1=0)
+embedding = SUDE(
+    n_components=2,
+    n_neighbors=0,
+    init="pca",
+    max_iter=50,
+).fit_transform(X)
 elapsed = time.time() - start_time
 
 print(f"Elapsed time: {elapsed:.3f}s")

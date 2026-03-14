@@ -53,56 +53,14 @@ pip install -e .
 
 ## How to run
 
-The SUDE package exposes the `sude` function for embedding high-dimensional
-data.
+The package now exposes both a scikit-learn style estimator class and the
+legacy function wrapper.
 
-The description of the hyperparameters for user configuration are presented as follows
-```python
-def sude(
-    X,
-    no_dims = 2,
-    k1 = 20,
-    normalize = True,
-    large = False,
-    initialize = 'le',
-    agg_coef = 1.2,
-    T_epoch = 50,
-):
-"""
-    This function returns representation of the N by D matrix X in the lower-dimensional space. Each row in X
-    represents an observation.
+### Estimator interface
 
-    Parameters are:
-
-    'no_dims'      - A positive integer specifying the number of dimension of the representation Y.
-                   Default: 2
-    'k1'           - A non-negative integer specifying the number of nearest neighbors for PPS to
-                   sample landmarks. It must be smaller than N.
-                   Default: adaptive
-    'normalize'    - Logical scalar. If true, normalize X using min-max normalization. If features in
-                   X are on different scales, 'Normalize' should be set to true because the learning
-                   process is based on nearest neighbors and features with large scales can override
-                   the contribution of features with small scales.
-                   Default: True
-    'large'        - Logical scalar. If true, the data can be split into multiple blocks to avoid the problem
-                   of memory overflow, and the gradient can be computed block by block using 'learning_l' function.
-                   Default: False
-    'initialize'   - A string specifying the method for initializing Y before manifold learning.
-        'le'       - Laplacian eigenmaps.
-        'pca'      - Principal component analysis.
-        'mds'      - Multidimensional scaling.
-                   Default: 'le'
-    'agg_coef'     - A positive scalar specifying the aggregation coefficient.
-                   Default: 1.2
-    'T_epoch'      - Maximum number of epochs to take.
-                   Default: 50
-"""
-```
-
-After installing the SUDE package, you can use this function as follows:
 ```python
 import numpy as np
-from sude import sude
+from sude import SUDE
 import time
 import matplotlib.pyplot as plt
 
@@ -114,14 +72,39 @@ m = data.shape[1]
 X = data[:, :m - 1]
 ref = data[:, m - 1]
 
-# Perform SUDE embedding
+# Fit a scikit-learn style estimator
 start_time = time.time()
-Y = sude(X, k1=10)
+model = SUDE(
+    n_components=2,
+    n_neighbors=10,
+    init="pca",
+    max_iter=50,
+)
+Y = model.fit_transform(X)
 end_time = time.time()
 print("Elapsed time:", end_time - start_time, 's')
 
 plt.scatter(Y[:, 0], Y[:, 1], c=ref, cmap='tab10', s=4)
 plt.show()
+```
+
+The estimator provides the familiar API:
+
+```python
+model = SUDE(n_components=2, n_neighbors=10, init="spectral")
+Y_train = model.fit_transform(X_train)
+Y_test = model.transform(X_test)
+```
+
+### Function interface
+
+The original function entry point remains available for backwards
+compatibility:
+
+```python
+from sude import sude
+
+Y = sude(X, no_dims=2, k1=10, initialize="le", T_epoch=50)
 ```
 
 Run the packaged example with:
