@@ -6,6 +6,11 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.utils.validation import check_is_fitted
 
+try:
+    from sklearn.utils.validation import validate_data as sklearn_validate_data
+except ImportError:  # pragma: no cover - older scikit-learn versions
+    sklearn_validate_data = None
+
 from .clle import clle
 from .init_pca import init_pca
 from .learning_l import learning_l
@@ -20,6 +25,23 @@ _INIT_ALIASES = {
     "pca": "pca",
     "mds": "mds",
 }
+
+
+def _validate_estimator_data(estimator, X, *, reset: bool):
+    if sklearn_validate_data is not None:
+        return sklearn_validate_data(
+            estimator,
+            X,
+            reset=reset,
+            ensure_2d=True,
+            dtype=np.float64,
+        )
+    return estimator._validate_data(
+        X,
+        reset=reset,
+        ensure_2d=True,
+        dtype=np.float64,
+    )
 
 
 def _resolve_init(init: str) -> str:
@@ -127,7 +149,7 @@ def _embed_with_landmarks(
         near_top_k = near_samp[i]
         top_X = X_landmarks[near_top_k]
         top_Y = Y_landmarks[near_top_k]
-        nearest_scale = float(scale[near_top_k[0]])
+        nearest_scale = float(scale[near_top_k[0], 0])
         n_dis = near_dis[i, 0] * nearest_scale
         embedding[i] = np.asarray(clle(top_X, top_Y, X[i], n_dis)).reshape(-1)
     return embedding
@@ -224,7 +246,7 @@ class SUDE(TransformerMixin, BaseEstimator):
 
     def fit(self, X, y=None):
         """Fit the SUDE embedding on X."""
-        X = self._validate_data(X, ensure_2d=True, dtype=np.float64)
+        X = _validate_estimator_data(self, X, reset=True)
         fit_result = _fit_embedding(
             X=X,
             n_components=self.n_components,
@@ -263,7 +285,7 @@ class SUDE(TransformerMixin, BaseEstimator):
                 "landmark_scale_",
             ],
         )
-        X = self._validate_data(X, reset=False, ensure_2d=True, dtype=np.float64)
+        X = _validate_estimator_data(self, X, reset=False)
         if X.shape == self.X_fit_.shape and np.array_equal(X, self.X_fit_):
             return np.array(self.embedding_, copy=True)
         X_unique, inverse_indices = np.unique(X, axis=0, return_inverse=True)
