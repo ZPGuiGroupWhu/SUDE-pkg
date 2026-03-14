@@ -7,7 +7,7 @@ sys.path.insert(0, str(ROOT))
 
 project = "sude"
 author = "pdh"
-release = "0.1.4"
+release = "0.1.5"
 
 extensions = [
     "sphinx.ext.autodoc",
@@ -16,3 +16,4 @@ extensions = [
 templates_path = ["_templates"]
 exclude_patterns = ["_build"]
 html_theme = "alabaster"
+
