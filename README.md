@@ -1,9 +1,40 @@
 # Sampling-enabled scalable manifold learning unveils the discriminative cluster structure of high-dimensional data (SUDE)
-We propose a scalable manifold learning (SUDE) method that can cope with large-scale and high-dimensional data in an efficient manner. It starts by seeking a set of landmarks to construct the low-dimensional skeleton of the entire data, and then incorporates the non-landmarks into this skeleton based on the constrained locally linear embedding. This project provides the ***Python version of SUDE***, and the MATLAB version can be found at https://github.com/ZPGuiGroupWhu/sude. This paper has been published in ***Nature Machine Intelligence***, and more details can be seen https://www.nature.com/articles/s42256-025-01112-9.
+
+We propose a scalable manifold learning (SUDE) method that can cope with
+large-scale and high-dimensional data in an efficient manner. It starts by
+seeking a set of landmarks to construct the low-dimensional skeleton of the
+entire data, and then incorporates the non-landmarks into this skeleton based
+on the constrained locally linear embedding.
+
+This repository provides the Python version of SUDE. The MATLAB version can be
+found at https://github.com/ZPGuiGroupWhu/sude. The related paper has been
+published in *Nature Machine Intelligence*:
+https://www.nature.com/articles/s42256-025-01112-9.
 
 ![image](https://raw.githubusercontent.com/ZPGuiGroupWhu/SUDE-pkg/refs/heads/main/image/sude.jpg)
 
-# Installation
+## Project layout
+
+The project now follows the structure of the
+`scikit-learn-contrib/project-template`:
+
+```text
+.
+|-- .github/workflows/
+|-- benchmarks/
+|-- doc/
+|-- examples/
+|-- image/
+|-- sude/
+|   |-- __init__.py
+|   |-- _sude.py
+|   |-- _version.py
+|   `-- tests/
+|-- pyproject.toml
+`-- README.md
+```
+
+## Installation
 Supported `python` versions are `3.8` and above.
 
 This project has been uploaded to [PyPI](https://pypi.org/project/sude/), supporting direct download and installation from pypi
@@ -12,7 +43,7 @@ This project has been uploaded to [PyPI](https://pypi.org/project/sude/), suppor
 pip install sude
 ```
 
-## Manual Installation
+### Manual installation
 
 ```
 git clone https://github.com/ZPGuiGroupWhu/SUDE-pkg.git
@@ -20,8 +51,10 @@ cd SUDE-pkg
 pip install -e .
 ```
 
-# How To Run
-The SUDE algorithm package provides the `sude` function for clustering.
+## How to run
+
+The SUDE package exposes the `sude` function for embedding high-dimensional
+data.
 
 The description of the hyperparameters for user configuration are presented as follows
 ```python
@@ -66,16 +99,15 @@ def sude(
 """
 ```
 
-After installing the SUDE library, you can use this function as follows:
+After installing the SUDE package, you can use this function as follows:
 ```python
-import pandas as pd
 import numpy as np
 from sude import sude
 import time
 import matplotlib.pyplot as plt
 
 # Input data
-data = np.array(pd.read_csv('benchmarks/rice.csv', header=None))
+data = np.loadtxt("benchmarks/rice.csv", delimiter=",")
 
 # Obtain data size and true annotations
 m = data.shape[1]
@@ -92,14 +124,21 @@ plt.scatter(Y[:, 0], Y[:, 1], c=ref, cmap='tab10', s=4)
 plt.show()
 ```
 
-# Citation Request
+Run the packaged example with:
+
+```bash
+uv run python examples/plot_sude_embedding.py
+```
+
+Run the test suite with:
+
+```bash
+uv run python -m unittest discover -s sude/tests
+```
+
+## Citation request
 Peng, D., Gui, Z., Wei, W. et al. Sampling-enabled scalable manifold learning unveils the discriminative cluster structure of high-dimensional data. Nat. Mach. Intell. (2025). https://doi.org/10.1038/s42256-025-01112-9
 
 
-# License
+## License
 SUDE is released under the MIT License.
-
-
-
-
-
