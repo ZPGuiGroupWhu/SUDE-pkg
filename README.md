@@ -6,9 +6,11 @@ seeking a set of landmarks to construct the low-dimensional skeleton of the
 entire data, and then incorporates the non-landmarks into this skeleton based
 on the constrained locally linear embedding.
 
-This repository provides the Python version of SUDE. The MATLAB version can be
-found at https://github.com/ZPGuiGroupWhu/sude. The related paper has been
-published in *Nature Machine Intelligence*:
+This repository provides the Python version of SUDE. Version 0.2.0 keeps the
+public API of the original `sude` package while improving the runtime of the
+probability construction, gradient computation, and non-landmark embedding
+steps. The MATLAB version can be found at https://github.com/ZPGuiGroupWhu/sude.
+The related paper has been published in *Nature Machine Intelligence*:
 https://www.nature.com/articles/s42256-025-01112-9.
 
 ![image](https://raw.githubusercontent.com/ZPGuiGroupWhu/SUDE-pkg/refs/heads/main/image/sude.jpg)
@@ -27,8 +29,11 @@ The project now follows the structure of the
 |-- image/
 |-- sude/
 |   |-- __init__.py
+|   |-- _learning_utils.py
+|   |-- _numba_kernels.py
 |   |-- _sude.py
 |   |-- _version.py
+|   |-- learning.py
 |   `-- tests/
 |-- pyproject.toml
 `-- README.md
@@ -42,6 +47,8 @@ This project has been uploaded to [PyPI](https://pypi.org/project/sude/), suppor
 ```
 pip install sude
 ```
+
+Numba-accelerated kernels are installed by default.
 
 ### Manual installation
 

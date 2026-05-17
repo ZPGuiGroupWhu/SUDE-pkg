@@ -7,6 +7,8 @@ Install the package in editable mode from the project root:
 
    uv run python -m pip install -e .
 
+Numba-accelerated kernels are installed by default with the package.
+
 Run the package tests:
 
 .. code-block:: bash

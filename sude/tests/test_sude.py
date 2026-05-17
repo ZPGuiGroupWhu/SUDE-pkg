@@ -59,6 +59,16 @@ class TestSUDE(unittest.TestCase):
         self.assertGreater(model.n_landmarks_, 0)
         self.assertEqual(model.get_feature_names_out().tolist(), ["sude0", "sude1"])
 
+    def test_fit_caches_landmark_neighbor_index(self):
+        model = SUDE(
+            n_components=2,
+            n_neighbors=10,
+            init="pca",
+            max_iter=1,
+        ).fit(self.X)
+
+        self.assertTrue(hasattr(model, "landmark_nn_"))
+
     def test_returns_expected_shape(self):
         embedding = sude(self.X, no_dims=2, k1=0, initialize="pca", T_epoch=2)
 

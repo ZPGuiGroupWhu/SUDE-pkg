@@ -11,10 +11,9 @@ try:
 except ImportError:  # pragma: no cover - older scikit-learn versions
     sklearn_validate_data = None
 
-from .clle import clle
+from .clle import clle_batch
 from .init_pca import init_pca
-from .learning_l import learning_l
-from .learning_s import learning_s
+from .learning import learning, memory_budget_for_large
 from .opt_scale import opt_scale
 from .pps import pps
 
@@ -124,7 +123,7 @@ def _compute_landmarks(
         get_knn = NearestNeighbors(n_neighbors=n_neighbors + 1).fit(
             X
         ).kneighbors(X, return_distance=False)
-    _, rnn = np.unique(get_knn, return_counts=True)
+    rnn = np.bincount(get_knn.ravel(), minlength=n_samples)
     id_samp = pps(get_knn, rnn, 1)
     return get_knn, rnn, id_samp
 
@@ -135,23 +134,28 @@ def _embed_with_landmarks(
     Y_landmarks: np.ndarray,
     scale: np.ndarray,
     n_components: int,
+    nn_model=None,
 ):
     if X.shape[0] == 0:
         return np.empty((0, n_components))
 
     top_k = min(n_components + 1, X_landmarks.shape[0])
-    near_dis, near_samp = NearestNeighbors(n_neighbors=top_k).fit(
-        X_landmarks
-    ).kneighbors(X)
+    if nn_model is None:
+        nn_model = NearestNeighbors(n_neighbors=top_k).fit(X_landmarks)
+    near_dis, near_samp = nn_model.kneighbors(X)
 
-    embedding = np.zeros((X.shape[0], n_components))
-    for i in range(X.shape[0]):
-        near_top_k = near_samp[i]
-        top_X = X_landmarks[near_top_k]
-        top_Y = Y_landmarks[near_top_k]
-        nearest_scale = float(scale[near_top_k[0], 0])
-        n_dis = near_dis[i, 0] * nearest_scale
-        embedding[i] = np.asarray(clle(top_X, top_Y, X[i], n_dis)).reshape(-1)
+    embedding = np.empty((X.shape[0], n_components))
+    batch_size = 16384
+    for start in range(0, X.shape[0], batch_size):
+        stop = min(start + batch_size, X.shape[0])
+        near_top_k = near_samp[start:stop]
+        n_dis = near_dis[start:stop, 0] * scale[near_top_k[:, 0], 0]
+        embedding[start:stop] = clle_batch(
+            X_landmarks[near_top_k],
+            Y_landmarks[near_top_k],
+            X[start:stop],
+            n_dis,
+        )
     return embedding
 
 
@@ -182,8 +186,8 @@ def _fit_embedding(
     get_knn, rnn, id_samp = _compute_landmarks(X_unique, n_components, n_neighbors)
     X_landmarks = X_unique[id_samp]
 
-    learning_fn = learning_l if large else learning_s
-    Y_landmarks, k2 = learning_fn(
+    memory_budget_mb = memory_budget_for_large(X_landmarks.shape[0]) if large else None
+    Y_landmarks, k2 = learning(
         X_landmarks,
         n_neighbors,
         get_knn,
@@ -193,10 +197,13 @@ def _fit_embedding(
         resolved_init,
         agg_coef,
         max_iter,
+        memory_budget_mb=memory_budget_mb,
     )
 
     scale_neighbors = min(k2, max(1, X_landmarks.shape[0] - 1))
     scale = opt_scale(X_landmarks, Y_landmarks, scale_neighbors)
+    top_k = min(n_components + 1, X_landmarks.shape[0])
+    landmark_nn = NearestNeighbors(n_neighbors=top_k).fit(X_landmarks)
 
     if n_neighbors > 0:
         id_rest = np.setdiff1d(range(n_samples), id_samp)
@@ -208,6 +215,7 @@ def _fit_embedding(
             Y_landmarks,
             scale,
             n_components,
+            nn_model=landmark_nn,
         )
     else:
         Y_unique = Y_landmarks
@@ -217,6 +225,7 @@ def _fit_embedding(
         "landmarks": X_landmarks,
         "landmark_embedding": Y_landmarks,
         "landmark_scale": scale,
+        "landmark_nn": landmark_nn,
         "scaler": scaler,
         "resolved_init": resolved_init,
     }
@@ -262,6 +271,7 @@ class SUDE(TransformerMixin, BaseEstimator):
         self.X_landmarks_ = fit_result["landmarks"]
         self.Y_landmarks_ = fit_result["landmark_embedding"]
         self.landmark_scale_ = fit_result["landmark_scale"]
+        self.landmark_nn_ = fit_result["landmark_nn"]
         self.scaler_ = fit_result["scaler"]
         self.X_fit_ = np.array(X, copy=True)
         self.init_ = fit_result["resolved_init"]
@@ -283,6 +293,7 @@ class SUDE(TransformerMixin, BaseEstimator):
                 "X_landmarks_",
                 "Y_landmarks_",
                 "landmark_scale_",
+                "landmark_nn_",
             ],
         )
         X = _validate_estimator_data(self, X, reset=False)
@@ -297,6 +308,7 @@ class SUDE(TransformerMixin, BaseEstimator):
             self.Y_landmarks_,
             self.landmark_scale_,
             self.n_components,
+            nn_model=self.landmark_nn_,
         )
         return embedding[inverse_indices]
 
@@ -319,10 +331,35 @@ def sude(
     T_epoch: int = 50,
 ):
     """
-    Backward-compatible function interface for computing a SUDE embedding.
+    Return a lower-dimensional representation of the N by D matrix X.
 
-    This wrapper preserves the original parameter names while delegating the
-    computation to the sklearn-style SUDE estimator.
+    Each row in X represents one observation.
+
+    Parameters
+    ----------
+    X : array-like of shape (n_samples, n_features)
+        Input data matrix.
+    no_dims : int, default=2
+        Number of dimensions in the representation Y.
+    k1 : int, default=20
+        Number of nearest neighbors used by PPS to sample landmarks. It must be
+        smaller than the number of samples.
+    normalize : bool, default=True
+        Whether to apply min-max normalization to X before nearest-neighbor
+        learning.
+    large : bool, default=False
+        Whether to use memory-bounded learning for large data.
+    initialize : {"le", "pca", "mds"}, default="le"
+        Initialization method for Y before manifold learning.
+    agg_coef : float, default=1.2
+        Aggregation coefficient.
+    T_epoch : int, default=50
+        Maximum number of optimization epochs.
+
+    Returns
+    -------
+    Y : ndarray of shape (n_samples, no_dims)
+        The learned embedding.
     """
     init = "spectral" if initialize == "le" else initialize
     estimator = SUDE(

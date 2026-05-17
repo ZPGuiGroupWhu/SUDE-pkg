@@ -1,6 +1,10 @@
 User guide
 ==========
 
+SUDE 0.2.0 uses optimized probability construction, gradient computation, and
+batched non-landmark embedding. Numba-accelerated kernels are installed by
+default.
+
 The primary API now follows the scikit-learn estimator pattern:
 
 .. code-block:: python

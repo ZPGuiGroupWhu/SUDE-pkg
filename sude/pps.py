@@ -1,6 +1,3 @@
-import numpy as np
-
-
 def pps(knn, rnn, order):
     """
     Plum Pudding Sampling (PPS)
@@ -22,6 +19,5 @@ def pps(knn, rnn, order):
         for _ in range(order):
             rm_pts.extend(knn[rm_pts].flatten().tolist())
         rm_pts = set(rm_pts)
-        rm_id = np.where(np.isin(id_sort, list(rm_pts)))[0]
-        id_sort = [id_sort[i] for i in range(len(id_sort)) if i not in rm_id]
+        id_sort = [point_id for point_id in id_sort if point_id not in rm_pts]
     return id_samp
