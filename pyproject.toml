@@ -51,5 +51,4 @@ target-version = ['py38']
 
 [tool.pytest.ini_options]
 addopts = "--color=yes"
-testpaths = ["sude/tests"]
-
+testpaths = ["tests"]

@@ -20,4 +20,4 @@ jobs:
       - name: Install project
         run: uv sync
       - name: Run tests
-        run: uv run python -m unittest discover -s sude/tests
+        run: uv run python -m unittest discover -s tests

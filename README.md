@@ -123,7 +123,7 @@ uv run python examples/plot_sude_embedding.py
 Run the test suite with:
 
 ```bash
-uv run python -m unittest discover -s sude/tests
+uv run python -m unittest discover -s tests
 ```
 
 ## Citation request

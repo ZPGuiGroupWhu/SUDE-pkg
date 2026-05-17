@@ -13,7 +13,7 @@ Run the package tests:
 
 .. code-block:: bash
 
-   uv run python -m unittest discover -s sude/tests
+   uv run python -m unittest discover -s tests
 
 Run the example script:
 
