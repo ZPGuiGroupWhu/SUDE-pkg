@@ -17,6 +17,10 @@ import numpy as np
 import time
 
 
+NUMBA_AUTO_MIN_SAMPLES = 3000
+NUMBA_AUTO_MIN_LANDMARKS = 512
+
+
 def _adaptive_k2(n_samples):
     if n_samples < 9:
         return n_samples
@@ -36,6 +40,29 @@ def _auto_block_size(n_samples, memory_budget_mb):
     return max(1, min(n_samples, block_size))
 
 
+def _is_positive_int(value):
+    return isinstance(value, int) and not isinstance(value, bool) and value > 0
+
+
+def _numba_thresholds_are_valid():
+    return _is_positive_int(NUMBA_AUTO_MIN_SAMPLES) and _is_positive_int(
+        NUMBA_AUTO_MIN_LANDMARKS
+    )
+
+
+def should_use_numba(n_samples, n_landmarks=None):
+    if not NUMBA_AVAILABLE:
+        return False
+    if not _numba_thresholds_are_valid():
+        return True
+    if n_landmarks is None:
+        n_landmarks = n_samples
+    return (
+        n_samples >= NUMBA_AUTO_MIN_SAMPLES
+        and n_landmarks >= NUMBA_AUTO_MIN_LANDMARKS
+    )
+
+
 def _build_probability_matrix(
     X_samp,
     k1,
@@ -46,10 +73,15 @@ def _build_probability_matrix(
     agg_coef,
     k2,
     memory_budget_mb=None,
+    use_numba=None,
 ):
     n_samples, n_features = X_samp.shape
+    if use_numba is None:
+        use_numba = NUMBA_AVAILABLE
+    else:
+        use_numba = bool(use_numba and NUMBA_AVAILABLE)
     if k1 > 0:
-        if NUMBA_AVAILABLE:
+        if use_numba:
             landmark_knn = get_knn[id_samp]
             if memory_budget_mb is None:
                 row, col, values = build_neighbor_probability_rows(
@@ -186,12 +218,17 @@ def learning(
     agg_coef,
     T_epoch,
     memory_budget_mb=None,
+    use_numba=None,
     return_profile=False,
 ):
     profile = {}
     total_start = time.perf_counter()
     n_samples, _ = X_samp.shape
     k2 = _adaptive_k2(n_samples)
+    if use_numba is None:
+        use_numba = should_use_numba(n_samples, n_samples)
+    else:
+        use_numba = bool(use_numba and NUMBA_AVAILABLE)
     probability_start = time.perf_counter()
     probability = _build_probability_matrix(
         X_samp,
@@ -203,6 +240,7 @@ def learning(
         agg_coef,
         k2,
         memory_budget_mb=memory_budget_mb,
+        use_numba=use_numba,
     )
     probability = (probability + probability.transpose()) / 2
     profile["probability_seconds"] = time.perf_counter() - probability_start
@@ -214,7 +252,7 @@ def learning(
     profile["normalize_probability_seconds"] = time.perf_counter() - normalize_start
 
     block_size = _auto_block_size(n_samples, memory_budget_mb)
-    use_fused_gradient = NUMBA_AVAILABLE
+    use_fused_gradient = use_numba
     use_dense_gradient = (not use_fused_gradient) and block_size >= n_samples
     probability_dense = probability.toarray() if use_dense_gradient else None
 
@@ -254,6 +292,7 @@ def learning(
     profile["total_seconds"] = time.perf_counter() - total_start
     profile["n_samples"] = n_samples
     profile["k2"] = k2
+    profile["used_numba"] = bool(use_numba)
     profile["used_fused_gradient"] = bool(use_fused_gradient)
     print(str(epoch - 1) + " epochs have been computed!")
     if return_profile:

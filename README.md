@@ -33,8 +33,8 @@ The project now follows the structure of the
 |   |-- _numba_kernels.py
 |   |-- _sude.py
 |   |-- _version.py
-|   |-- learning.py
-|   `-- tests/
+|   `-- learning.py
+|-- tests/
 |-- pyproject.toml
 `-- README.md
 ```
@@ -48,7 +48,28 @@ This project has been uploaded to [PyPI](https://pypi.org/project/sude/), suppor
 pip install sude
 ```
 
-Numba-accelerated kernels are installed by default.
+Numba-accelerated kernels are installed by default. SUDE enables them
+automatically when both the unique input sample count and the landmark count
+are large enough.
+
+The default thresholds are:
+
+```python
+NUMBA_AUTO_MIN_SAMPLES = 3000
+NUMBA_AUTO_MIN_LANDMARKS = 512
+```
+
+You can adjust them before fitting:
+
+```python
+import sude.learning as sude_learning
+
+sude_learning.NUMBA_AUTO_MIN_SAMPLES = 5000
+sude_learning.NUMBA_AUTO_MIN_LANDMARKS = 1024
+```
+
+Both values must be positive integers. If either value is invalid, SUDE falls
+back to using numba whenever numba is installed.
 
 ### Manual installation
 

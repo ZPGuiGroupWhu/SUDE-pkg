@@ -13,7 +13,7 @@ except ImportError:  # pragma: no cover - older scikit-learn versions
 
 from .clle import clle_batch
 from .init_pca import init_pca
-from .learning import learning, memory_budget_for_large
+from .learning import learning, memory_budget_for_large, should_use_numba
 from .opt_scale import opt_scale
 from .pps import pps
 
@@ -185,9 +185,10 @@ def _fit_embedding(
 
     get_knn, rnn, id_samp = _compute_landmarks(X_unique, n_components, n_neighbors)
     X_landmarks = X_unique[id_samp]
+    use_numba = should_use_numba(n_samples, X_landmarks.shape[0])
 
     memory_budget_mb = memory_budget_for_large(X_landmarks.shape[0]) if large else None
-    Y_landmarks, k2 = learning(
+    Y_landmarks, k2, profile = learning(
         X_landmarks,
         n_neighbors,
         get_knn,
@@ -198,6 +199,8 @@ def _fit_embedding(
         agg_coef,
         max_iter,
         memory_budget_mb=memory_budget_mb,
+        use_numba=use_numba,
+        return_profile=True,
     )
 
     scale_neighbors = min(k2, max(1, X_landmarks.shape[0] - 1))
@@ -228,6 +231,7 @@ def _fit_embedding(
         "landmark_nn": landmark_nn,
         "scaler": scaler,
         "resolved_init": resolved_init,
+        "used_numba": profile["used_numba"],
     }
 
 
@@ -277,6 +281,7 @@ class SUDE(TransformerMixin, BaseEstimator):
         self.init_ = fit_result["resolved_init"]
         self.n_landmarks_ = self.X_landmarks_.shape[0]
         self.n_iter_ = self.max_iter
+        self.used_numba_ = fit_result["used_numba"]
         return self
 
     def fit_transform(self, X, y=None):
