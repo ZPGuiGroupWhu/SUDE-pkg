@@ -1,7 +1,7 @@
 User guide
 ==========
 
-SUDE 0.2.0 uses optimized probability construction, gradient computation, and
+SUDE 0.2.1 uses optimized probability construction, gradient computation, and
 batched non-landmark embedding. Numba-accelerated kernels are installed by
 default and are enabled automatically for datasets that are large enough to
 benefit from them.

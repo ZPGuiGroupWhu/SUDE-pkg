@@ -6,7 +6,7 @@ seeking a set of landmarks to construct the low-dimensional skeleton of the
 entire data, and then incorporates the non-landmarks into this skeleton based
 on the constrained locally linear embedding.
 
-This repository provides the Python version of SUDE. Version 0.2.0 keeps the
+This repository provides the Python version of SUDE. Version 0.2.1 keeps the
 public API of the original `sude` package while improving the runtime of the
 probability construction, gradient computation, and non-landmark embedding
 steps. The MATLAB version can be found at https://github.com/ZPGuiGroupWhu/sude.
