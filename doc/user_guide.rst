@@ -14,7 +14,7 @@ The primary API now follows the scikit-learn estimator pattern:
 
    model = SUDE(n_components=2, n_neighbors=20, init="le")
    embedding = model.fit_transform(X)
-   new_embedding = model.transform(X_new)
+   embedding_new = model.transform(X_new)
 
 The function wrapper uses the same sklearn-style parameter names:
 

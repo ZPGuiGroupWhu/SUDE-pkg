@@ -105,7 +105,7 @@ start_time = time.time()
 model = SUDE(
     n_components=2,
     n_neighbors=10,
-    init="pca",
+    init="le",
     max_iter=50,
 )
 Y = model.fit_transform(X)
@@ -120,8 +120,8 @@ The estimator provides the familiar API:
 
 ```python
 model = SUDE(n_components=2, n_neighbors=10, init="le")
-Y_train = model.fit_transform(X_train)
-Y_test = model.transform(X_test)
+Y = model.fit_transform(X)
+Y_new = model.transform(X_new)
 ```
 
 ### Function interface

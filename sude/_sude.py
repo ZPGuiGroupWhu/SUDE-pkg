@@ -263,7 +263,7 @@ class SUDE(TransformerMixin, BaseEstimator):
     Attributes
     ----------
     embedding_ : ndarray of shape (n_samples, n_components)
-        Learned embedding for the training samples.
+        Learned embedding for the fitted samples.
     X_landmarks_ : ndarray of shape (n_landmarks, n_features)
         Landmark samples used to embed non-landmark and new samples.
     Y_landmarks_ : ndarray of shape (n_landmarks, n_components)
@@ -306,7 +306,7 @@ class SUDE(TransformerMixin, BaseEstimator):
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
-            Training data.
+            Input data to fit.
         y : None
             Ignored. Present for scikit-learn API compatibility.
 
@@ -347,7 +347,7 @@ class SUDE(TransformerMixin, BaseEstimator):
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
-            Training data.
+            Input data to fit and embed.
         y : None
             Ignored. Present for scikit-learn API compatibility.
 
@@ -363,8 +363,8 @@ class SUDE(TransformerMixin, BaseEstimator):
         """
         Embed samples using the fitted SUDE landmarks.
 
-        If X is exactly the training data passed to :meth:`fit`, this method
-        returns a copy of the learned training embedding. Otherwise, it embeds
+        If X is exactly the input data passed to :meth:`fit`, this method
+        returns a copy of the learned fitted-data embedding. Otherwise, it embeds
         X by constrained locally linear embedding against the fitted landmark
         set.
 
@@ -372,7 +372,7 @@ class SUDE(TransformerMixin, BaseEstimator):
         ----------
         X : array-like of shape (n_samples, n_features)
             Samples to embed. The number of features must match the fitted
-            training data.
+            input data.
 
         Returns
         -------

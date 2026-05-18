@@ -43,4 +43,4 @@ Quick estimator example:
    from sude import SUDE
 
    X = np.loadtxt("benchmarks/rice.csv", delimiter=",")[:, :-1]
-   embedding = SUDE(n_components=2, n_neighbors=10, init="pca").fit_transform(X)
+   embedding = SUDE(n_components=2, n_neighbors=10, init="le").fit_transform(X)
