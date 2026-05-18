@@ -1,3 +1,15 @@
+"""
+Internal SUDE optimization routines and numba acceleration policy.
+
+Most functions in this module are implementation details used by
+``sude.SUDE``. The module-level ``NUMBA_AUTO_MIN_SAMPLES`` and
+``NUMBA_AUTO_MIN_LANDMARKS`` values are user-configurable thresholds: SUDE uses
+numba-accelerated kernels only when numba is installed and both the unique
+input sample count and landmark count meet these thresholds. Both thresholds
+must be positive integers; invalid values make SUDE use numba whenever it is
+available.
+"""
+
 from sklearn.neighbors import NearestNeighbors
 from scipy.sparse import csr_matrix
 from scipy.spatial.distance import cdist

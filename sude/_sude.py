@@ -236,7 +236,58 @@ def _fit_embedding(
 
 
 class SUDE(TransformerMixin, BaseEstimator):
-    """Scalable manifold learning estimator with a scikit-learn style API."""
+    """
+    Scalable manifold learning estimator with a scikit-learn style API.
+
+    SUDE learns a low-dimensional embedding from high-dimensional input data.
+    It follows the scikit-learn transformer interface: call :meth:`fit` to
+    learn the embedding and landmark state, :meth:`fit_transform` to return the
+    training embedding directly, and :meth:`transform` to embed new samples
+    using the fitted landmarks.
+
+    Parameters
+    ----------
+    n_components : int, default=2
+        Number of embedding dimensions; corresponds to ``no_dims`` in the
+        original function interface and the output dimension in the paper.
+    n_neighbors : int, default=20
+        Number of nearest neighbors used by PPS to sample landmarks;
+        corresponds to ``k1`` in the paper. Set to 0 to disable landmark
+        sampling.
+    normalize : bool, default=True
+        Whether to apply min-max normalization before nearest-neighbor
+        learning.
+    large : bool, default=False
+        Whether to use memory-bounded learning for large data.
+    init : {"spectral", "le", "pca", "mds"}, default="spectral"
+        Initialization method for the embedding; corresponds to ``initialize``
+        in the original function interface. ``"spectral"`` is an alias for the
+        paper's Laplacian eigenmap initialization, ``"le"``.
+    agg_coef : float, default=1.2
+        Aggregation coefficient; corresponds to ``agg_coef`` in the paper.
+    max_iter : int, default=50
+        Maximum number of optimization epochs; corresponds to ``T_epoch`` in
+        the paper.
+
+    Attributes
+    ----------
+    embedding_ : ndarray of shape (n_samples, n_components)
+        Learned embedding for the training samples.
+    X_landmarks_ : ndarray of shape (n_landmarks, n_features)
+        Landmark samples used to embed non-landmark and new samples.
+    Y_landmarks_ : ndarray of shape (n_landmarks, n_components)
+        Learned embedding coordinates for the landmarks.
+    landmark_scale_ : ndarray
+        Local scale values used by constrained locally linear embedding.
+    n_landmarks_ : int
+        Number of landmarks selected during fitting.
+    n_iter_ : int
+        Number of optimization epochs requested through ``max_iter``.
+    init_ : {"le", "pca", "mds"}
+        Resolved initializer passed to the optimization routine.
+    used_numba_ : bool
+        Whether numba-accelerated kernels were used during fitting.
+    """
 
     def __init__(
         self,
@@ -258,7 +309,21 @@ class SUDE(TransformerMixin, BaseEstimator):
         self.max_iter = max_iter
 
     def fit(self, X, y=None):
-        """Fit the SUDE embedding on X."""
+        """
+        Fit the SUDE embedding on X.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training data.
+        y : None
+            Ignored. Present for scikit-learn API compatibility.
+
+        Returns
+        -------
+        self : SUDE
+            Fitted estimator.
+        """
         X = _validate_estimator_data(self, X, reset=True)
         fit_result = _fit_embedding(
             X=X,
@@ -285,12 +350,44 @@ class SUDE(TransformerMixin, BaseEstimator):
         return self
 
     def fit_transform(self, X, y=None):
-        """Fit the model on X and return the learned embedding."""
+        """
+        Fit the model on X and return the learned embedding.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training data.
+        y : None
+            Ignored. Present for scikit-learn API compatibility.
+
+        Returns
+        -------
+        Y : ndarray of shape (n_samples, n_components)
+            Learned embedding for X.
+        """
         self.fit(X, y=y)
         return self.embedding_
 
     def transform(self, X):
-        """Embed new samples using the fitted SUDE landmarks."""
+        """
+        Embed samples using the fitted SUDE landmarks.
+
+        If X is exactly the training data passed to :meth:`fit`, this method
+        returns a copy of the learned training embedding. Otherwise, it embeds
+        X by constrained locally linear embedding against the fitted landmark
+        set.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Samples to embed. The number of features must match the fitted
+            training data.
+
+        Returns
+        -------
+        Y : ndarray of shape (n_samples, n_components)
+            Embedding for X.
+        """
         check_is_fitted(
             self,
             attributes=[
@@ -318,7 +415,20 @@ class SUDE(TransformerMixin, BaseEstimator):
         return embedding[inverse_indices]
 
     def get_feature_names_out(self, input_features=None):
-        """Return output feature names for the embedding coordinates."""
+        """
+        Return output feature names for the embedding coordinates.
+
+        Parameters
+        ----------
+        input_features : array-like of str or None, default=None
+            Ignored. Present for scikit-learn API compatibility.
+
+        Returns
+        -------
+        feature_names_out : ndarray of str objects
+            Names of the embedding coordinates, from ``"sude0"`` to
+            ``"sude{n_components - 1}"``.
+        """
         return np.asarray(
             [f"sude{i}" for i in range(self.n_components)],
             dtype=object,
@@ -327,13 +437,14 @@ class SUDE(TransformerMixin, BaseEstimator):
 
 def sude(
     X: np.ndarray,
-    no_dims: int = 2,
-    k1: int = 20,
+    n_components: int = 2,
+    *,
+    n_neighbors: int = 20,
     normalize: bool = True,
     large: bool = False,
-    initialize: Literal["le", "pca", "mds"] = "le",
+    init: Literal["spectral", "le", "pca", "mds"] = "spectral",
     agg_coef: float = 1.2,
-    T_epoch: int = 50,
+    max_iter: int = 50,
 ):
     """
     Return a lower-dimensional representation of the N by D matrix X.
@@ -344,36 +455,38 @@ def sude(
     ----------
     X : array-like of shape (n_samples, n_features)
         Input data matrix.
-    no_dims : int, default=2
-        Number of dimensions in the representation Y.
-    k1 : int, default=20
+    n_components : int, default=2
+        Number of embedding dimensions; corresponds to ``no_dims`` in the
+        original function interface and the output dimension in the paper.
+    n_neighbors : int, default=20
         Number of nearest neighbors used by PPS to sample landmarks. It must be
-        smaller than the number of samples.
+        smaller than the number of samples. Corresponds to ``k1`` in the paper.
     normalize : bool, default=True
         Whether to apply min-max normalization to X before nearest-neighbor
         learning.
     large : bool, default=False
         Whether to use memory-bounded learning for large data.
-    initialize : {"le", "pca", "mds"}, default="le"
-        Initialization method for Y before manifold learning.
+    init : {"spectral", "le", "pca", "mds"}, default="spectral"
+        Initialization method for Y before manifold learning; corresponds to
+        ``initialize`` in the original function interface.
     agg_coef : float, default=1.2
-        Aggregation coefficient.
-    T_epoch : int, default=50
-        Maximum number of optimization epochs.
+        Aggregation coefficient; corresponds to ``agg_coef`` in the paper.
+    max_iter : int, default=50
+        Maximum number of optimization epochs; corresponds to ``T_epoch`` in
+        the paper.
 
     Returns
     -------
-    Y : ndarray of shape (n_samples, no_dims)
+    Y : ndarray of shape (n_samples, n_components)
         The learned embedding.
     """
-    init = "spectral" if initialize == "le" else initialize
     estimator = SUDE(
-        n_components=no_dims,
-        n_neighbors=k1,
+        n_components=n_components,
+        n_neighbors=n_neighbors,
         normalize=normalize,
         large=large,
         init=init,
         agg_coef=agg_coef,
-        max_iter=T_epoch,
+        max_iter=max_iter,
     )
     return estimator.fit_transform(X)

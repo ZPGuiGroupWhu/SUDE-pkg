@@ -16,24 +16,32 @@ The primary API now follows the scikit-learn estimator pattern:
    embedding = model.fit_transform(X)
    new_embedding = model.transform(X_new)
 
-The legacy function wrapper is still available:
+The function wrapper uses the same sklearn-style parameter names:
 
 .. code-block:: python
 
    from sude import sude
 
-   embedding = sude(X, no_dims=2, k1=20, initialize="le")
+   embedding = sude(X, n_components=2, n_neighbors=20, init="spectral")
 
 Key parameters
 --------------
 
 ``n_components``
-   Output embedding dimension.
+   Output embedding dimension. This corresponds to ``no_dims`` in the
+   original function interface.
 
 ``n_neighbors``
-   Number of nearest neighbours used for landmark sampling. Set ``k1=0`` in
-   the legacy function or ``n_neighbors=0`` in the estimator to disable
-   landmark sampling.
+   Number of nearest neighbours used for landmark sampling. This corresponds
+   to ``k1`` in the paper. Set ``n_neighbors=0`` to disable landmark sampling.
+
+``init``
+   Initialization method. This corresponds to ``initialize`` in the original
+   function interface.
+
+``max_iter``
+   Maximum number of optimization epochs. This corresponds to ``T_epoch`` in
+   the paper.
 
 ``normalize``
    Apply min-max scaling before the embedding is computed.

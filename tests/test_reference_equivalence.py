@@ -139,9 +139,15 @@ class TestReferenceEquivalence(unittest.TestCase):
             init="pca",
             max_iter=2,
         ).fit_transform(X)
-        legacy = sude(X, no_dims=2, k1=10, initialize="pca", T_epoch=2)
+        functional = sude(
+            X,
+            n_components=2,
+            n_neighbors=10,
+            init="pca",
+            max_iter=2,
+        )
 
-        np.testing.assert_allclose(estimator, legacy, rtol=1e-12, atol=1e-12)
+        np.testing.assert_allclose(estimator, functional, rtol=1e-12, atol=1e-12)
 
 
 if __name__ == "__main__":

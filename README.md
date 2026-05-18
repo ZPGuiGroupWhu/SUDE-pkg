@@ -81,8 +81,8 @@ pip install -e .
 
 ## How to run
 
-The package now exposes both a scikit-learn style estimator class and the
-legacy function wrapper.
+The package now exposes both a scikit-learn style estimator class and a
+function wrapper with matching parameter names.
 
 ### Estimator interface
 
@@ -126,14 +126,19 @@ Y_test = model.transform(X_test)
 
 ### Function interface
 
-The original function entry point remains available for backwards
-compatibility:
+The function entry point uses the same sklearn-style parameter names as the
+estimator:
 
 ```python
 from sude import sude
 
-Y = sude(X, no_dims=2, k1=10, initialize="le", T_epoch=50)
+Y = sude(X, n_components=2, n_neighbors=10, init="spectral", max_iter=50)
 ```
+
+For readers comparing with the paper or original function interface,
+``n_components`` corresponds to ``no_dims``, ``n_neighbors`` corresponds to
+``k1``, ``init`` corresponds to ``initialize``, and ``max_iter`` corresponds to
+``T_epoch``.
 
 Run the packaged example with:
 

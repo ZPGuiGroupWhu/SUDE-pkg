@@ -37,10 +37,10 @@ class TestSUDE(unittest.TestCase):
         embedding_from_estimator = model.fit_transform(self.X)
         embedding_from_function = sude(
             self.X,
-            no_dims=2,
-            k1=0,
-            initialize="pca",
-            T_epoch=2,
+            n_components=2,
+            n_neighbors=0,
+            init="pca",
+            max_iter=2,
         )
 
         np.testing.assert_allclose(
@@ -252,7 +252,13 @@ class TestSUDE(unittest.TestCase):
             learning_module.NUMBA_AUTO_MIN_LANDMARKS = original_min_landmarks
 
     def test_returns_expected_shape(self):
-        embedding = sude(self.X, no_dims=2, k1=0, initialize="pca", T_epoch=2)
+        embedding = sude(
+            self.X,
+            n_components=2,
+            n_neighbors=0,
+            init="pca",
+            max_iter=2,
+        )
 
         self.assertEqual(embedding.shape, (20, 2))
         self.assertTrue(np.isfinite(embedding).all())
@@ -260,7 +266,13 @@ class TestSUDE(unittest.TestCase):
     def test_duplicate_rows_keep_duplicate_embeddings(self):
         X = np.vstack([self.X[:10], self.X[:3]])
 
-        embedding = sude(X, no_dims=2, k1=0, initialize="pca", T_epoch=1)
+        embedding = sude(
+            X,
+            n_components=2,
+            n_neighbors=0,
+            init="pca",
+            max_iter=1,
+        )
 
         np.testing.assert_allclose(embedding[0], embedding[10])
         np.testing.assert_allclose(embedding[1], embedding[11])
@@ -311,13 +323,13 @@ class TestSUDE(unittest.TestCase):
         self.assertEqual(embedding.shape, (20, 2))
         self.assertTrue(np.isfinite(embedding).all())
 
-    def test_function_keeps_legacy_initializer_names(self):
+    def test_function_supports_estimator_initializer_aliases(self):
         embedding = sude(
             self.X[:15],
-            no_dims=2,
-            k1=0,
-            initialize="le",
-            T_epoch=1,
+            n_components=2,
+            n_neighbors=0,
+            init="le",
+            max_iter=1,
         )
         estimator_embedding = SUDE(
             n_components=2,
@@ -329,29 +341,39 @@ class TestSUDE(unittest.TestCase):
         self.assertEqual(embedding.shape, (15, 2))
         self.assert_embeddings_equivalent(embedding, estimator_embedding)
 
-    def test_function_supported_initializers(self):
+    def test_function_supported_initializers_match_estimator(self):
         X = self.X[:15]
 
-        for initialize in ("le", "pca", "mds"):
-            with self.subTest(initialize=initialize):
+        for init in ("spectral", "le", "pca", "mds"):
+            with self.subTest(init=init):
                 embedding = sude(
                     X,
-                    no_dims=2,
-                    k1=0,
-                    initialize=initialize,
-                    T_epoch=1,
+                    n_components=2,
+                    n_neighbors=0,
+                    init=init,
+                    max_iter=1,
                 )
                 self.assertEqual(embedding.shape, (15, 2))
                 self.assertTrue(np.isfinite(embedding).all())
 
+    def test_function_rejects_paper_style_parameter_names(self):
+        with self.assertRaises(TypeError):
+            sude(
+                self.X,
+                no_dims=2,
+                k1=0,
+                initialize="pca",
+                T_epoch=1,
+            )
+
     def test_large_mode_runs(self):
         embedding = sude(
             self.X,
-            no_dims=2,
-            k1=0,
-            initialize="pca",
+            n_components=2,
+            n_neighbors=0,
+            init="pca",
             large=True,
-            T_epoch=1,
+            max_iter=1,
         )
 
         self.assertEqual(embedding.shape, (20, 2))
