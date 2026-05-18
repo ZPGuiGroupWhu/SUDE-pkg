@@ -18,14 +18,6 @@ from .opt_scale import opt_scale
 from .pps import pps
 
 
-_INIT_ALIASES = {
-    "spectral": "le",
-    "le": "le",
-    "pca": "pca",
-    "mds": "mds",
-}
-
-
 def _validate_estimator_data(estimator, X, *, reset: bool):
     if sklearn_validate_data is not None:
         return sklearn_validate_data(
@@ -44,12 +36,11 @@ def _validate_estimator_data(estimator, X, *, reset: bool):
 
 
 def _resolve_init(init: str) -> str:
-    try:
-        return _INIT_ALIASES[init]
-    except KeyError as exc:
+    if init not in {"le", "pca", "mds"}:
         raise ValueError(
-            "init must be one of {'spectral', 'le', 'pca', 'mds'}"
-        ) from exc
+            "init must be one of {'le', 'pca', 'mds'}"
+        )
+    return init
 
 
 def _validate_parameters(
@@ -239,34 +230,34 @@ class SUDE(TransformerMixin, BaseEstimator):
     """
     Scalable manifold learning estimator with a scikit-learn style API.
 
-    SUDE learns a low-dimensional embedding from high-dimensional input data.
-    It follows the scikit-learn transformer interface: call :meth:`fit` to
-    learn the embedding and landmark state, :meth:`fit_transform` to return the
-    training embedding directly, and :meth:`transform` to embed new samples
-    using the fitted landmarks.
+    SUDE is a sampling-based scalable manifold learning method for uniform
+    and discriminative embedding of large-scale and high-dimensional data. It
+    first samples landmarks to construct the low-dimensional skeleton of the
+    data, then incorporates non-landmark samples into this skeleton with
+    constrained locally linear embedding.
 
     Parameters
     ----------
     n_components : int, default=2
-        Number of embedding dimensions; corresponds to ``no_dims`` in the
-        original function interface and the output dimension in the paper.
+        Number of dimensions in the learned embedding. Corresponds to
+        ``no_dims`` in the original function interface and to the output
+        dimension in the paper.
     n_neighbors : int, default=20
-        Number of nearest neighbors used by PPS to sample landmarks;
-        corresponds to ``k1`` in the paper. Set to 0 to disable landmark
-        sampling.
+        Number of nearest neighbors used by PPS to sample landmarks.
+        Corresponds to ``k1`` in the paper. It must be smaller than the number
+        of samples when positive. Set to 0 to disable landmark sampling.
     normalize : bool, default=True
-        Whether to apply min-max normalization before nearest-neighbor
-        learning.
+        Whether to apply min-max normalization to the input data before
+        nearest-neighbor learning.
     large : bool, default=False
         Whether to use memory-bounded learning for large data.
-    init : {"spectral", "le", "pca", "mds"}, default="spectral"
-        Initialization method for the embedding; corresponds to ``initialize``
-        in the original function interface. ``"spectral"`` is an alias for the
-        paper's Laplacian eigenmap initialization, ``"le"``.
+    init : {"le", "pca", "mds"}, default="le"
+        Initialization method for the embedding. Corresponds to ``initialize``
+        in the original function interface and paper-style notation.
     agg_coef : float, default=1.2
-        Aggregation coefficient; corresponds to ``agg_coef`` in the paper.
+        Aggregation coefficient. Corresponds to ``γ`` in the paper.
     max_iter : int, default=50
-        Maximum number of optimization epochs; corresponds to ``T_epoch`` in
+        Maximum number of optimization epochs. Corresponds to ``T_epoch`` in
         the paper.
 
     Attributes
@@ -296,7 +287,7 @@ class SUDE(TransformerMixin, BaseEstimator):
         n_neighbors: int = 20,
         normalize: bool = True,
         large: bool = False,
-        init: Literal["spectral", "le", "pca", "mds"] = "spectral",
+        init: Literal["le", "pca", "mds"] = "le",
         agg_coef: float = 1.2,
         max_iter: int = 50,
     ):
@@ -442,37 +433,44 @@ def sude(
     n_neighbors: int = 20,
     normalize: bool = True,
     large: bool = False,
-    init: Literal["spectral", "le", "pca", "mds"] = "spectral",
+    init: Literal["le", "pca", "mds"] = "le",
     agg_coef: float = 1.2,
     max_iter: int = 50,
 ):
     """
     Return a lower-dimensional representation of the N by D matrix X.
 
-    Each row in X represents one observation.
+    SUDE is a sampling-based scalable manifold learning method for uniform
+    and discriminative embedding of large-scale and high-dimensional data. It
+    first samples landmarks to construct the low-dimensional skeleton of the
+    data, then incorporates non-landmark samples into this skeleton with
+    constrained locally linear embedding. Each row in X represents one
+    observation.
 
     Parameters
     ----------
     X : array-like of shape (n_samples, n_features)
         Input data matrix.
     n_components : int, default=2
-        Number of embedding dimensions; corresponds to ``no_dims`` in the
-        original function interface and the output dimension in the paper.
+        Number of dimensions in the learned embedding. Corresponds to
+        ``no_dims`` in the original function interface and to the output
+        dimension in the paper.
     n_neighbors : int, default=20
-        Number of nearest neighbors used by PPS to sample landmarks. It must be
-        smaller than the number of samples. Corresponds to ``k1`` in the paper.
+        Number of nearest neighbors used by PPS to sample landmarks.
+        Corresponds to ``k1`` in the paper. It must be smaller than the number
+        of samples when positive. Set to 0 to disable landmark sampling.
     normalize : bool, default=True
-        Whether to apply min-max normalization to X before nearest-neighbor
-        learning.
+        Whether to apply min-max normalization to the input data before
+        nearest-neighbor learning.
     large : bool, default=False
         Whether to use memory-bounded learning for large data.
-    init : {"spectral", "le", "pca", "mds"}, default="spectral"
-        Initialization method for Y before manifold learning; corresponds to
-        ``initialize`` in the original function interface.
+    init : {"le", "pca", "mds"}, default="le"
+        Initialization method for the embedding. Corresponds to ``initialize``
+        in the original function interface and paper-style notation.
     agg_coef : float, default=1.2
-        Aggregation coefficient; corresponds to ``agg_coef`` in the paper.
+        Aggregation coefficient. Corresponds to ``γ`` in the paper.
     max_iter : int, default=50
-        Maximum number of optimization epochs; corresponds to ``T_epoch`` in
+        Maximum number of optimization epochs. Corresponds to ``T_epoch`` in
         the paper.
 
     Returns

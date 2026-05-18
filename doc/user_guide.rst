@@ -12,7 +12,7 @@ The primary API now follows the scikit-learn estimator pattern:
 
    from sude import SUDE
 
-   model = SUDE(n_components=2, n_neighbors=20, init="spectral")
+   model = SUDE(n_components=2, n_neighbors=20, init="le")
    embedding = model.fit_transform(X)
    new_embedding = model.transform(X_new)
 
@@ -22,7 +22,7 @@ The function wrapper uses the same sklearn-style parameter names:
 
    from sude import sude
 
-   embedding = sude(X, n_components=2, n_neighbors=20, init="spectral")
+   embedding = sude(X, n_components=2, n_neighbors=20, init="le")
 
 Key parameters
 --------------

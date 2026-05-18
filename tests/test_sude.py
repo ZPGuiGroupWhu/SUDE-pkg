@@ -281,7 +281,7 @@ class TestSUDE(unittest.TestCase):
     def test_estimator_supported_initializers(self):
         X = self.X[:15]
 
-        for init in ("spectral", "le", "pca", "mds"):
+        for init in ("le", "pca", "mds"):
             with self.subTest(init=init):
                 embedding = SUDE(
                     n_components=2,
@@ -291,6 +291,18 @@ class TestSUDE(unittest.TestCase):
                 ).fit_transform(X)
                 self.assertEqual(embedding.shape, (15, 2))
                 self.assertTrue(np.isfinite(embedding).all())
+
+    def test_estimator_rejects_spectral_initializer(self):
+        with self.assertRaisesRegex(
+            ValueError,
+            "init must be one of {'le', 'pca', 'mds'}",
+        ):
+            SUDE(
+                n_components=2,
+                n_neighbors=0,
+                init="spectral",
+                max_iter=1,
+            ).fit(self.X[:15])
 
     def test_transform_embeds_new_samples(self):
         model = SUDE(
@@ -323,28 +335,10 @@ class TestSUDE(unittest.TestCase):
         self.assertEqual(embedding.shape, (20, 2))
         self.assertTrue(np.isfinite(embedding).all())
 
-    def test_function_supports_estimator_initializer_aliases(self):
-        embedding = sude(
-            self.X[:15],
-            n_components=2,
-            n_neighbors=0,
-            init="le",
-            max_iter=1,
-        )
-        estimator_embedding = SUDE(
-            n_components=2,
-            n_neighbors=0,
-            init="spectral",
-            max_iter=1,
-        ).fit_transform(self.X[:15])
-
-        self.assertEqual(embedding.shape, (15, 2))
-        self.assert_embeddings_equivalent(embedding, estimator_embedding)
-
     def test_function_supported_initializers_match_estimator(self):
         X = self.X[:15]
 
-        for init in ("spectral", "le", "pca", "mds"):
+        for init in ("le", "pca", "mds"):
             with self.subTest(init=init):
                 embedding = sude(
                     X,
@@ -355,6 +349,19 @@ class TestSUDE(unittest.TestCase):
                 )
                 self.assertEqual(embedding.shape, (15, 2))
                 self.assertTrue(np.isfinite(embedding).all())
+
+    def test_function_rejects_spectral_initializer(self):
+        with self.assertRaisesRegex(
+            ValueError,
+            "init must be one of {'le', 'pca', 'mds'}",
+        ):
+            sude(
+                self.X[:15],
+                n_components=2,
+                n_neighbors=0,
+                init="spectral",
+                max_iter=1,
+            )
 
     def test_function_rejects_paper_style_parameter_names(self):
         with self.assertRaises(TypeError):

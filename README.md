@@ -119,7 +119,7 @@ plt.show()
 The estimator provides the familiar API:
 
 ```python
-model = SUDE(n_components=2, n_neighbors=10, init="spectral")
+model = SUDE(n_components=2, n_neighbors=10, init="le")
 Y_train = model.fit_transform(X_train)
 Y_test = model.transform(X_test)
 ```
@@ -132,7 +132,7 @@ estimator:
 ```python
 from sude import sude
 
-Y = sude(X, n_components=2, n_neighbors=10, init="spectral", max_iter=50)
+Y = sude(X, n_components=2, n_neighbors=10, init="le", max_iter=50)
 ```
 
 For readers comparing with the paper or original function interface,
