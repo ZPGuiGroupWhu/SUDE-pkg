@@ -19,7 +19,7 @@ https://www.nature.com/articles/s42256-025-01112-9.
 
 ### [2026-05-18] SUDE v0.2.1 Released
 
-We have updated both the implementations of **SUDE** with substantial performance optimizations while preserving the original embedding behavior and accuracy.
+We have updated the implementations of **SUDE** with substantial performance optimizations while preserving the original embedding behavior and accuracy.
 
 The new implementation now supports **Numba acceleration** for several computational bottlenecks, including:
 
