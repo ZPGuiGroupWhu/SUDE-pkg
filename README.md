@@ -15,6 +15,22 @@ https://www.nature.com/articles/s42256-025-01112-9.
 
 ![image](https://raw.githubusercontent.com/ZPGuiGroupWhu/SUDE-pkg/refs/heads/main/image/sude.jpg)
 
+## 🔥 News
+
+### [2026-05-18] SUDE v0.2.1 Released
+
+We have updated both the implementations of **SUDE** with substantial performance optimizations while preserving the original embedding behavior and accuracy.
+
+The new implementation now supports **Numba acceleration** for several computational bottlenecks, including:
+
+* High-dimensional probability matrix construction
+* Gradient computation
+* Landmark-related operations
+
+When the dataset size exceeds **3000 samples** or the number of landmark points exceeds **512**, Numba JIT acceleration is automatically enabled by default. Please note that the first execution may require additional compilation time due to JIT initialization.
+
+The optimized Python version achieves approximately **10×** speedup on large-scale datasets compared with the original implementation.
+
 ## Project layout
 
 The project now follows the structure of the
