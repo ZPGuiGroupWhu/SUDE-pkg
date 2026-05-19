@@ -29,7 +29,7 @@ The new implementation now supports **Numba acceleration** for several computati
 
 When the dataset size exceeds **3000 samples** or the number of landmark points exceeds **512**, Numba JIT acceleration is automatically enabled by default. Please note that the first execution may require additional compilation time due to JIT initialization.
 
-The optimized Python version achieves approximately **10×** speedup on large-scale datasets compared with the original implementation.
+The optimized Python version achieves approximately **10×–20×** speedup on large-scale datasets compared with the original implementation.
 
 ## Project layout
 
